@@ -134,6 +134,8 @@ type IntegrationForm struct {
 	PushoverDevice                   string
 	PushoverPrefix                   string
 	ArchiveorgEnabled                bool
+	DigestEnabled                    bool
+	DigestIntervalHours              int
 }
 
 // Merge copy form values to the model.
@@ -256,6 +258,23 @@ func (i IntegrationForm) Merge(integration *model.Integration) {
 	integration.PushoverDevice = i.PushoverDevice
 	integration.PushoverPrefix = i.PushoverPrefix
 	integration.ArchiveorgEnabled = i.ArchiveorgEnabled
+	integration.DigestEnabled = i.DigestEnabled
+	integration.DigestIntervalHours = i.DigestIntervalHours
+}
+
+// ValidateDigest ensures the digest interval is a positive number of hours
+// when the digest is enabled.
+func (i IntegrationForm) ValidateDigest() *locale.LocalizedError {
+	if !i.DigestEnabled {
+		return nil
+	}
+	if i.DigestIntervalHours < 1 {
+		return locale.NewLocalizedError("error.invalid_digest_interval")
+	}
+	if !i.WebhookEnabled || i.WebhookURL == "" {
+		return locale.NewLocalizedError("error.digest_requires_webhook")
+	}
+	return nil
 }
 
 // ValidateGoogleReader ensures the Google Reader integration is not enabled without credentials.
@@ -271,6 +290,13 @@ func (i IntegrationForm) ValidateGoogleReader(storedPasswordHash string) *locale
 
 // NewIntegrationForm returns a new IntegrationForm.
 func NewIntegrationForm(r *http.Request) *IntegrationForm {
+	digestIntervalHours, err := strconv.Atoi(r.FormValue("digest_interval_hours"))
+	if r.FormValue("digest_interval_hours") == "" {
+		digestIntervalHours = 0
+	} else if err != nil {
+		digestIntervalHours = -1
+	}
+
 	return &IntegrationForm{
 		PinboardEnabled:                  r.FormValue("pinboard_enabled") == "1",
 		PinboardToken:                    r.FormValue("pinboard_token"),
@@ -392,6 +418,8 @@ func NewIntegrationForm(r *http.Request) *IntegrationForm {
 		PushoverDevice:                   r.FormValue("pushover_device"),
 		PushoverPrefix:                   r.FormValue("pushover_prefix"),
 		ArchiveorgEnabled:                r.FormValue("archiveorg_enabled") == "1",
+		DigestEnabled:                    r.FormValue("digest_enabled") == "1",
+		DigestIntervalHours:              digestIntervalHours,
 	}
 }
 

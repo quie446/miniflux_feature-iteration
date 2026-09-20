@@ -79,6 +79,14 @@ func (h *handler) updateIntegration(w http.ResponseWriter, r *http.Request) {
 		integration.WebhookSecret = ""
 	}
 
+	if !integrationForm.DigestEnabled {
+		integration.DigestIntervalHours = 0
+	} else if validationErr := integrationForm.ValidateDigest(); validationErr != nil {
+		sess.SetErrorMessage(validationErr.Translate(sess.Language()))
+		response.HTMLRedirect(w, r, h.routePath("/integrations"))
+		return
+	}
+
 	if integrationForm.LinktacoEnabled {
 		if integrationForm.LinktacoAPIToken == "" || integrationForm.LinktacoOrgSlug == "" {
 			sess.SetErrorMessage(printer.Print("error.linktaco_missing_required_fields"))

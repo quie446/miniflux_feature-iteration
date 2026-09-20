@@ -145,6 +145,8 @@ func (h *handler) showIntegrationPage(w http.ResponseWriter, r *http.Request) {
 		PushoverDevice:                   integration.PushoverDevice,
 		PushoverPrefix:                   integration.PushoverPrefix,
 		ArchiveorgEnabled:                integration.ArchiveorgEnabled,
+		DigestEnabled:                    integration.DigestEnabled,
+		DigestIntervalHours:              integration.DigestIntervalHours,
 	}
 
 	view := view.New(h.tpl, r)

@@ -715,6 +715,24 @@
             </div>
         </div>
     </details>
+
+    <details {{ if .form.DigestEnabled }}open{{ end }}>
+        <summary>{{ t "form.integration.digest_section" }}</summary>
+        <div class="form-section">
+            <label>
+                <input type="checkbox" name="digest_enabled" value="1" {{ if .form.DigestEnabled }}checked{{ end }}> {{ t "form.integration.digest_activate" }}
+            </label>
+
+            <label for="form-digest-interval-hours">{{ t "form.integration.digest_interval_hours" }}</label>
+            <input type="number" name="digest_interval_hours" id="form-digest-interval-hours" value="{{ .form.DigestIntervalHours }}" min="1" step="1">
+
+            <p>{{ t "form.integration.digest_help" }}</p>
+
+            <div class="buttons">
+                <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
+            </div>
+        </div>
+    </details>
 </form>
 
 <h3>{{ t "page.integration.bookmarklet" }}</h3>

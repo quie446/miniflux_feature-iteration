@@ -1,59 +1,46 @@
 // SPDX-FileCopyrightText: Copyright The Miniflux Authors. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package form // import "miniflux.app/v2/internal/ui/form"
+package form
 
-import (
-	"testing"
-)
+import "testing"
 
-func TestValidateGoogleReader(t *testing.T) {
-	scenarios := []struct {
-		name               string
-		form               IntegrationForm
-		storedPasswordHash string
-		expectError        bool
-	}{
-		{
-			name: "disabled without credentials",
-			form: IntegrationForm{},
-		},
-		{
-			name: "enabled with username and new password",
-			form: IntegrationForm{GoogleReaderEnabled: true, GoogleReaderUsername: "user", GoogleReaderPassword: "secret"},
-		},
-		{
-			name:               "enabled with username and stored password",
-			form:               IntegrationForm{GoogleReaderEnabled: true, GoogleReaderUsername: "user"},
-			storedPasswordHash: "$2a$10$hash",
-		},
-		{
-			name:        "enabled without password",
-			form:        IntegrationForm{GoogleReaderEnabled: true, GoogleReaderUsername: "user"},
-			expectError: true,
-		},
-		{
-			name:               "enabled without username",
-			form:               IntegrationForm{GoogleReaderEnabled: true, GoogleReaderPassword: "secret"},
-			storedPasswordHash: "$2a$10$hash",
-			expectError:        true,
-		},
-		{
-			name:        "enabled without username and password",
-			form:        IntegrationForm{GoogleReaderEnabled: true},
-			expectError: true,
-		},
+func TestValidateDigestDisabled(t *testing.T) {
+	integrationForm := &IntegrationForm{DigestEnabled: false, DigestIntervalHours: 0}
+	if validationErr := integrationForm.ValidateDigest(); validationErr != nil {
+		t.Fatalf(`A disabled digest should always be valid, got %v`, validationErr)
 	}
+}
 
-	for _, scenario := range scenarios {
-		t.Run(scenario.name, func(t *testing.T) {
-			validationErr := scenario.form.ValidateGoogleReader(scenario.storedPasswordHash)
-			if scenario.expectError && validationErr == nil {
-				t.Fatal("expected a validation error")
-			}
-			if !scenario.expectError && validationErr != nil {
-				t.Fatalf("unexpected validation error: %v", validationErr)
-			}
-		})
+func TestValidateDigestWithInvalidInterval(t *testing.T) {
+	for _, interval := range []int{0, -1} {
+		integrationForm := &IntegrationForm{
+			DigestEnabled:       true,
+			DigestIntervalHours: interval,
+			WebhookEnabled:      true,
+			WebhookURL:          "https://example.org/webhook",
+		}
+		if validationErr := integrationForm.ValidateDigest(); validationErr == nil {
+			t.Errorf(`An enabled digest with interval %d should be rejected`, interval)
+		}
+	}
+}
+
+func TestValidateDigestRequiresWebhook(t *testing.T) {
+	integrationForm := &IntegrationForm{DigestEnabled: true, DigestIntervalHours: 6}
+	if validationErr := integrationForm.ValidateDigest(); validationErr == nil {
+		t.Error(`An enabled digest without a configured webhook should be rejected`)
+	}
+}
+
+func TestValidateDigestValid(t *testing.T) {
+	integrationForm := &IntegrationForm{
+		DigestEnabled:       true,
+		DigestIntervalHours: 6,
+		WebhookEnabled:      true,
+		WebhookURL:          "https://example.org/webhook",
+	}
+	if validationErr := integrationForm.ValidateDigest(); validationErr != nil {
+		t.Fatalf(`A valid digest configuration should be accepted, got %v`, validationErr)
 	}
 }

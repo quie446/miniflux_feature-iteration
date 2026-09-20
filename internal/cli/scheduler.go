@@ -28,6 +28,11 @@ func runScheduler(store *storage.Storage, pool *worker.Pool) {
 		store,
 		config.Opts.CleanupFrequency(),
 	)
+
+	go digestScheduler(
+		store,
+		digestPollingFrequency,
+	)
 }
 
 func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency time.Duration, batchSize, errorLimit, limitPerHost int) {

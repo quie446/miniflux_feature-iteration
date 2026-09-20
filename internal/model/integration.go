@@ -3,6 +3,8 @@
 
 package model // import "miniflux.app/v2/internal/model"
 
+import "time"
+
 // Integration represents user integration settings.
 type Integration struct {
 	UserID                           int64
@@ -127,4 +129,7 @@ type Integration struct {
 	PushoverDevice                   string
 	PushoverPrefix                   string
 	ArchiveorgEnabled                bool
+	DigestEnabled                    bool
+	DigestIntervalHours              int
+	DigestLastSentAt                 *time.Time
 }

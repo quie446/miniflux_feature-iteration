@@ -1579,4 +1579,12 @@ var migrations = [...]func(tx *sql.Tx) error{
 		`)
 		return err
 	},
+	func(tx *sql.Tx) (err error) {
+		_, err = tx.Exec(`
+			ALTER TABLE integrations ADD COLUMN digest_enabled boolean not null default false;
+			ALTER TABLE integrations ADD COLUMN digest_interval_hours integer not null default 0;
+			ALTER TABLE integrations ADD COLUMN digest_last_sent_at timestamptz;
+		`)
+		return err
+	},
 }
