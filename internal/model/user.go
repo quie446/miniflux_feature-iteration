@@ -43,7 +43,13 @@ type User struct {
 	ShowReadingTime                 bool       `json:"show_reading_time"`
 	EntrySwipe                      bool       `json:"entry_swipe"`
 	IsAdmin                         bool       `json:"is_admin"`
+	DigestEnabled                   bool       `json:"digest_enabled"`
+	DigestIntervalHours             int        `json:"digest_interval_hours"`
+	LastDigestSentAt                *time.Time `json:"last_digest_sent_at"`
 }
+
+// MinDigestIntervalHours is the smallest accepted digest interval.
+const MinDigestIntervalHours = 1
 
 // UserCreationRequest represents the request to create a user.
 type UserCreationRequest struct {

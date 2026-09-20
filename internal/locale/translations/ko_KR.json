@@ -619,5 +619,10 @@
     ],
     "time_elapsed.yesterday": "어제",
     "tooltip.keyboard_shortcuts": "키보드 단축키: %s",
-    "tooltip.logged_user": "%s로 로그인 중"
+    "tooltip.logged_user": "%s로 로그인 중",
+    "error.settings_digest_interval_invalid": "The digest interval must be at least 1 hour.",
+    "form.prefs.fieldset.digest_settings": "Digest",
+    "form.prefs.help.digest_interval_hours": "Send at most one digest every N hours. Digests are delivered through the webhook integration.",
+    "form.prefs.label.digest_enabled": "Send me a periodic digest of unread entries",
+    "form.prefs.label.digest_interval_hours": "Digest interval (hours)"
 }

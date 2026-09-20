@@ -619,5 +619,10 @@
     ],
     "time_elapsed.yesterday": "cha-hng",
     "tooltip.keyboard_shortcuts": "Khoài-sok khí：%s",
-    "tooltip.logged_user": "Chit-má teng-lo̍k--ê:  %s"
+    "tooltip.logged_user": "Chit-má teng-lo̍k--ê:  %s",
+    "error.settings_digest_interval_invalid": "The digest interval must be at least 1 hour.",
+    "form.prefs.fieldset.digest_settings": "Digest",
+    "form.prefs.help.digest_interval_hours": "Send at most one digest every N hours. Digests are delivered through the webhook integration.",
+    "form.prefs.label.digest_enabled": "Send me a periodic digest of unread entries",
+    "form.prefs.label.digest_interval_hours": "Digest interval (hours)"
 }

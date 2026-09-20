@@ -54,6 +54,8 @@ type SettingsForm struct {
 	EntrySwipe                bool
 	MarkReadOnView            bool
 	ShowReadingTime           bool
+	DigestEnabled             bool
+	DigestIntervalHours       int
 }
 
 // MarkAsReadBehavior returns the MarkReadBehavior from the given MarkReadOnView and MarkReadOnMediaPlayerCompletion values.
@@ -118,6 +120,8 @@ func (s *SettingsForm) Merge(user *model.User) *model.User {
 	user.KeepFilterEntryRules = s.KeepFilterEntryRules
 	user.AlwaysOpenExternalLinks = s.AlwaysOpenExternalLinks
 	user.OpenExternalLinksInNewTab = s.OpenExternalLinksInNewTab
+	user.DigestEnabled = s.DigestEnabled
+	user.DigestIntervalHours = s.DigestIntervalHours
 
 	MarkReadOnView, MarkReadOnMediaPlayerCompletion := extractMarkAsReadBehavior(s.MarkReadBehavior)
 	user.MarkReadOnView = MarkReadOnView
@@ -155,6 +159,10 @@ func (s *SettingsForm) Validate() *locale.LocalizedError {
 		return locale.NewLocalizedError("error.settings_media_playback_rate_range")
 	}
 
+	if s.DigestEnabled && s.DigestIntervalHours < model.MinDigestIntervalHours {
+		return locale.NewLocalizedError("error.settings_digest_interval_invalid")
+	}
+
 	if s.ExternalFontHosts != "" {
 		if !validator.IsValidDomainList(s.ExternalFontHosts) {
 			return locale.NewLocalizedError("error.settings_invalid_domain_list")
@@ -181,6 +189,10 @@ func NewSettingsForm(r *http.Request) *SettingsForm {
 	mediaPlaybackRate, err := strconv.ParseFloat(r.FormValue("media_playback_rate"), 64)
 	if err != nil {
 		mediaPlaybackRate = 1
+	}
+	digestIntervalHours, err := strconv.Atoi(r.FormValue("digest_interval_hours"))
+	if err != nil {
+		digestIntervalHours = 0
 	}
 	return &SettingsForm{
 		Username:                  r.FormValue("username"),
@@ -211,5 +223,7 @@ func NewSettingsForm(r *http.Request) *SettingsForm {
 		KeepFilterEntryRules:      r.FormValue("keep_filter_entry_rules"),
 		AlwaysOpenExternalLinks:   r.FormValue("always_open_external_links") == "1",
 		OpenExternalLinksInNewTab: r.FormValue("open_external_links_in_new_tab") == "1",
+		DigestEnabled:             r.FormValue("digest_enabled") == "1",
+		DigestIntervalHours:       digestIntervalHours,
 	}
 }

@@ -48,6 +48,8 @@ func (h *handler) showSettingsPage(w http.ResponseWriter, r *http.Request) {
 		KeepFilterEntryRules:      user.KeepFilterEntryRules,
 		AlwaysOpenExternalLinks:   user.AlwaysOpenExternalLinks,
 		OpenExternalLinksInNewTab: user.OpenExternalLinksInNewTab,
+		DigestEnabled:             user.DigestEnabled,
+		DigestIntervalHours:       user.DigestIntervalHours,
 	}
 
 	creds, err := h.store.WebAuthnCredentialsByUserID(user.ID)

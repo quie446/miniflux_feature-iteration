@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"miniflux.app/v2/internal/config"
+	"miniflux.app/v2/internal/digest"
 	"miniflux.app/v2/internal/storage"
 	"miniflux.app/v2/internal/worker"
 )
@@ -28,6 +29,8 @@ func runScheduler(store *storage.Storage, pool *worker.Pool) {
 		store,
 		config.Opts.CleanupFrequency(),
 	)
+
+	go digestScheduler(store, time.Minute)
 }
 
 func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency time.Duration, batchSize, errorLimit, limitPerHost int) {
@@ -53,5 +56,11 @@ func feedScheduler(store *storage.Storage, pool *worker.Pool, frequency time.Dur
 func cleanupScheduler(store *storage.Storage, frequency time.Duration) {
 	for range time.Tick(frequency) {
 		runCleanupTasks(store)
+	}
+}
+
+func digestScheduler(store *storage.Storage, frequency time.Duration) {
+	for range time.Tick(frequency) {
+		digest.SendPendingDigests(store)
 	}
 }

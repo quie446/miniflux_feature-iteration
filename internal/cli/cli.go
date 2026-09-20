@@ -12,6 +12,7 @@ import (
 
 	"miniflux.app/v2/internal/config"
 	"miniflux.app/v2/internal/database"
+	"miniflux.app/v2/internal/digest"
 	"miniflux.app/v2/internal/proxyrotator"
 	"miniflux.app/v2/internal/storage"
 	"miniflux.app/v2/internal/ui/static"
@@ -32,6 +33,7 @@ const (
 	flagHealthCheckHelp      = `Perform a health check on the given endpoint (the value "auto" tries to guess the health check endpoint).`
 	flagRefreshFeedsHelp     = "Refresh a batch of feeds and exit"
 	flagRunCleanupTasksHelp  = "Run cleanup tasks (delete old sessions and archive old entries)"
+	flagRunDigestHelp        = "Send pending entry digests and exit"
 	flagExportUserFeedsHelp  = "Export user feeds (provide the username as argument)"
 	flagResetNextCheckAtHelp = "Reset the next check time for all feeds"
 )
@@ -54,6 +56,7 @@ func Parse() {
 		flagHealthCheck          string
 		flagRefreshFeeds         bool
 		flagRunCleanupTasks      bool
+		flagRunDigest            bool
 		flagExportUserFeeds      string
 	)
 
@@ -74,6 +77,7 @@ func Parse() {
 	flag.StringVar(&flagHealthCheck, "healthcheck", "", flagHealthCheckHelp)
 	flag.BoolVar(&flagRefreshFeeds, "refresh-feeds", false, flagRefreshFeedsHelp)
 	flag.BoolVar(&flagRunCleanupTasks, "run-cleanup-tasks", false, flagRunCleanupTasksHelp)
+	flag.BoolVar(&flagRunDigest, "run-digest", false, flagRunDigestHelp)
 	flag.StringVar(&flagExportUserFeeds, "export-user-feeds", "", flagExportUserFeedsHelp)
 	flag.Parse()
 
@@ -242,6 +246,11 @@ func Parse() {
 
 	if flagRunCleanupTasks {
 		runCleanupTasks(store)
+		return
+	}
+
+	if flagRunDigest {
+		digest.SendPendingDigests(store)
 		return
 	}
 

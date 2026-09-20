@@ -1579,4 +1579,22 @@ var migrations = [...]func(tx *sql.Tx) error{
 		`)
 		return err
 	},
+	func(tx *sql.Tx) (err error) {
+		// Per-user digest settings and the log of entries already included
+		// in a digest. The digest_entries table is deliberately separate
+		// from the entries status so that sending a digest never changes
+		// the read/unread state.
+		_, err = tx.Exec(`
+			ALTER TABLE users ADD COLUMN digest_enabled boolean not null default false;
+			ALTER TABLE users ADD COLUMN digest_interval_hours int not null default 0;
+			ALTER TABLE users ADD COLUMN last_digest_sent_at timestamptz;
+			CREATE TABLE digest_entries (
+				user_id  bigint not null references users(id) on delete cascade,
+				entry_id bigint not null references entries(id) on delete cascade,
+				sent_at  timestamptz not null default now(),
+				primary key (user_id, entry_id)
+			);
+		`)
+		return err
+	},
 }

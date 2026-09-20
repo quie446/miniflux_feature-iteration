@@ -143,6 +143,20 @@
     </fieldset>
 
     <fieldset>
+        <legend>{{ t "form.prefs.fieldset.digest_settings" }}</legend>
+
+        <label><input type="checkbox" name="digest_enabled" value="1" {{ if .form.DigestEnabled }}checked{{ end }}> {{ t "form.prefs.label.digest_enabled" }}</label>
+
+        <label for="form-digest-interval-hours">{{ t "form.prefs.label.digest_interval_hours" }}</label>
+        <input type="number" name="digest_interval_hours" id="form-digest-interval-hours" value="{{ .form.DigestIntervalHours }}" min="1">
+        <div class="form-help">{{ t "form.prefs.help.digest_interval_hours" }}</div>
+
+        <div class="buttons">
+            <button type="submit" class="button button-primary" data-label-loading="{{ t "form.submit.saving" }}">{{ t "action.update" }}</button>
+        </div>
+    </fieldset>
+
+    <fieldset>
         <legend>{{ t "form.prefs.fieldset.application_settings" }}</legend>
 
         <label for="form-language">{{ t "form.prefs.label.language" }}</label>

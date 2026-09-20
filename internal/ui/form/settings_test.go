@@ -85,3 +85,39 @@ func TestConfirmationIncorrect(t *testing.T) {
 		t.Error("Validate should return an error")
 	}
 }
+
+func TestDigestIntervalValidation(t *testing.T) {
+	newSettingsForm := func(digestEnabled bool, digestIntervalHours int) *SettingsForm {
+		return &SettingsForm{
+			Username:            "user",
+			Theme:               "default",
+			Language:            "en_US",
+			Timezone:            "UTC",
+			EntryDirection:      "asc",
+			EntriesPerPage:      50,
+			DisplayMode:         "standalone",
+			DefaultReadingSpeed: 35,
+			CJKReadingSpeed:     25,
+			DefaultHomePage:     "unread",
+			MediaPlaybackRate:   1,
+			DigestEnabled:       digestEnabled,
+			DigestIntervalHours: digestIntervalHours,
+		}
+	}
+
+	if err := newSettingsForm(true, 6).Validate(); err != nil {
+		t.Errorf("a valid digest configuration should be accepted, got %v", err)
+	}
+
+	if err := newSettingsForm(false, 0).Validate(); err != nil {
+		t.Errorf("a disabled digest with a zero interval should be accepted, got %v", err)
+	}
+
+	if err := newSettingsForm(true, 0).Validate(); err == nil {
+		t.Error("a zero digest interval should be rejected when the digest is enabled")
+	}
+
+	if err := newSettingsForm(true, -2).Validate(); err == nil {
+		t.Error("a negative digest interval should be rejected when the digest is enabled")
+	}
+}

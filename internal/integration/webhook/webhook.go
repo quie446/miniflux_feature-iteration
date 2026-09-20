@@ -18,6 +18,7 @@ import (
 const (
 	NewEntriesEventType = "new_entries"
 	SaveEntryEventType  = "save_entry"
+	DigestEventType     = "digest"
 )
 
 type Client struct {
@@ -109,6 +110,50 @@ func (c *Client) SendNewEntriesWebhookEvent(feed *model.Feed, entries model.Entr
 	})
 }
 
+// SendDigestWebhookEvent sends a single digest event with the unread entries
+// grouped by feed. Entries are deduplicated by ID so the same entry never
+// appears twice in one digest.
+func (c *Client) SendDigestWebhookEvent(userID int64, entries model.Entries) error {
+	if len(entries) == 0 {
+		return nil
+	}
+
+	feeds := make([]*WebhookDigestFeed, 0)
+	feedsByID := make(map[int64]*WebhookDigestFeed)
+	seen := make(map[int64]bool)
+
+	for _, entry := range entries {
+		if seen[entry.ID] {
+			continue
+		}
+		seen[entry.ID] = true
+
+		digestFeed, found := feedsByID[entry.FeedID]
+		if !found {
+			digestFeed = &WebhookDigestFeed{FeedID: entry.FeedID}
+			if entry.Feed != nil {
+				digestFeed.FeedTitle = entry.Feed.Title
+			}
+			feedsByID[entry.FeedID] = digestFeed
+			feeds = append(feeds, digestFeed)
+		}
+
+		digestFeed.Entries = append(digestFeed.Entries, &WebhookDigestEntry{
+			ID:    entry.ID,
+			Title: entry.Title,
+			URL:   entry.URL,
+		})
+		digestFeed.UnreadCount++
+	}
+
+	return c.makeRequest(DigestEventType, &WebhookDigestEvent{
+		EventType:   DigestEventType,
+		UserID:      userID,
+		TotalUnread: len(seen),
+		Feeds:       feeds,
+	})
+}
+
 func (c *Client) makeRequest(eventType string, payload any) error {
 	if c.webhookURL == "" {
 		return errors.New(`webhook: missing webhook URL`)
@@ -184,4 +229,24 @@ type WebhookNewEntriesEvent struct {
 type WebhookSaveEntryEvent struct {
 	EventType string        `json:"event_type"`
 	Entry     *WebhookEntry `json:"entry"`
+}
+
+type WebhookDigestEntry struct {
+	ID    int64  `json:"id"`
+	Title string `json:"title"`
+	URL   string `json:"url"`
+}
+
+type WebhookDigestFeed struct {
+	FeedID      int64                 `json:"feed_id"`
+	FeedTitle   string                `json:"feed_title"`
+	UnreadCount int                   `json:"unread_count"`
+	Entries     []*WebhookDigestEntry `json:"entries"`
+}
+
+type WebhookDigestEvent struct {
+	EventType   string               `json:"event_type"`
+	UserID      int64                `json:"user_id"`
+	TotalUnread int                  `json:"total_unread"`
+	Feeds       []*WebhookDigestFeed `json:"feeds"`
 }

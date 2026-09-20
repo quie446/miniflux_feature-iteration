@@ -655,5 +655,10 @@
     ],
     "time_elapsed.yesterday": "вчора",
     "tooltip.keyboard_shortcuts": "Комбінація клавіш: %s",
-    "tooltip.logged_user": "Здійснено вхід як %s"
+    "tooltip.logged_user": "Здійснено вхід як %s",
+    "error.settings_digest_interval_invalid": "The digest interval must be at least 1 hour.",
+    "form.prefs.fieldset.digest_settings": "Digest",
+    "form.prefs.help.digest_interval_hours": "Send at most one digest every N hours. Digests are delivered through the webhook integration.",
+    "form.prefs.label.digest_enabled": "Send me a periodic digest of unread entries",
+    "form.prefs.label.digest_interval_hours": "Digest interval (hours)"
 }
